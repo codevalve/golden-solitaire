@@ -6,11 +6,20 @@ import { SUIT_SYMBOLS } from '../constants';
 interface CardProps {
   card: Card;
   onClick?: () => void;
+  onDragStart?: (e: React.DragEvent) => void;
   className?: string;
   isDragging?: boolean;
+  draggable?: boolean;
 }
 
-const CardComponent: React.FC<CardProps> = ({ card, onClick, className = '', isDragging = false }) => {
+const CardComponent: React.FC<CardProps> = ({ 
+  card, 
+  onClick, 
+  onDragStart, 
+  className = '', 
+  isDragging = false,
+  draggable = false
+}) => {
   if (!card.isFaceUp) {
     return (
       <div 
@@ -33,7 +42,9 @@ const CardComponent: React.FC<CardProps> = ({ card, onClick, className = '', isD
   return (
     <div 
       onClick={onClick}
-      className={`relative w-16 h-24 sm:w-24 sm:h-36 rounded-lg border border-gray-300 bg-white shadow-md cursor-pointer flex flex-col p-1 sm:p-2 transition-transform hover:-translate-y-1 active:scale-95 select-none ${textColor} ${className} ${isDragging ? 'z-50 opacity-90 scale-105 rotate-1' : ''}`}
+      onDragStart={onDragStart}
+      draggable={draggable}
+      className={`relative w-16 h-24 sm:w-24 sm:h-36 rounded-lg border border-gray-300 bg-white shadow-md cursor-grab active:cursor-grabbing flex flex-col p-1 sm:p-2 transition-transform hover:-translate-y-1 select-none ${textColor} ${className} ${isDragging ? 'opacity-50 grayscale' : ''}`}
     >
       <div className="flex flex-col items-start leading-none">
         <span className="text-sm sm:text-2xl font-black">{card.label}</span>
