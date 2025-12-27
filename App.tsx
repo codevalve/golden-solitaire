@@ -233,7 +233,7 @@ const App: React.FC = () => {
       </main>
       
       <footer className="bg-emerald-950 p-3 text-emerald-400 text-[10px] sm:text-xs text-center border-t border-emerald-900">
-        Golden Solitaire &bull; Designed for Seniors &bull; Privacy First &bull; No Ads
+        FARD's Game Studio &bull; Golden Solitaire &bull; Designed for Seniors &bull; Privacy First &bull; No Ads
       </footer>
     </div>
   );

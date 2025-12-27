@@ -29,8 +29,12 @@ const Header: React.FC<HeaderProps> = ({
   return (
     <header className="bg-emerald-800 text-white shadow-lg p-2 sm:p-4 flex items-center justify-between border-b border-emerald-700">
       <div className="flex items-center gap-2">
-        <h1 className="text-lg sm:text-2xl font-black tracking-tight flex items-center gap-1">
-          <span className="text-yellow-400 hidden xs:inline">Golden</span> Solitaire
+        <h1 className="text-lg sm:text-2xl font-black tracking-tight flex items-center gap-2">
+          <span className="text-xl sm:text-3xl" aria-hidden="true">👑</span>
+          <span className="flex items-center gap-1">
+            <span className="text-yellow-400">Golden</span>
+            <span>Solitaire</span>
+          </span>
         </h1>
       </div>
 

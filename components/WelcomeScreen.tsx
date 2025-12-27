@@ -12,8 +12,11 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
       <ParticleCelebration count={60} />
       
       <div className="relative z-[210] flex flex-col items-center text-center max-w-lg">
-        <div className="mb-6 scale-125">
+        <div className="mb-4 scale-125">
           <span className="text-6xl sm:text-8xl drop-shadow-2xl">👑</span>
+        </div>
+        <div className="text-emerald-300 font-bold uppercase tracking-[0.2em] text-[10px] sm:text-xs mb-2 opacity-80">
+          FARD's Game Studio Presents
         </div>
         <h1 className="text-5xl sm:text-7xl font-black text-white mb-4 tracking-tighter">
           Golden <span className="text-yellow-400">Solitaire</span>
