@@ -76,6 +76,33 @@ export const canMoveToTableau = (card: Card, targetPile: Card[]): boolean => {
   return topCard.isFaceUp && card.color !== topCard.color && card.value === topCard.value - 1;
 };
 
+export interface AutoMoveTarget {
+  type: 'foundation' | 'tableau';
+  index: number | Suit;
+}
+
+export const findAutoMoveTarget = (card: Card, gameState: GameState, sourceInfo: { source: 'waste' | 'tableau', index: number, cardIndex?: number }): AutoMoveTarget | null => {
+  const sourcePile = sourceInfo.source === 'waste' ? gameState.waste : gameState.tableau[sourceInfo.index];
+  const cardIdx = sourceInfo.cardIndex ?? (sourcePile.length - 1);
+  
+  // Only the top card can move to foundation
+  if (cardIdx === sourcePile.length - 1) {
+    if (canMoveToFoundation(card, gameState.foundation[card.suit])) {
+      return { type: 'foundation', index: card.suit };
+    }
+  }
+
+  // Check Tableau
+  for (let i = 0; i < 7; i++) {
+    if (sourceInfo.source === 'tableau' && i === sourceInfo.index) continue;
+    if (canMoveToTableau(card, gameState.tableau[i])) {
+      return { type: 'tableau', index: i };
+    }
+  }
+
+  return null;
+};
+
 export const checkWin = (foundation: GameState['foundation']): boolean => {
   return (
     foundation.hearts.length === 13 &&

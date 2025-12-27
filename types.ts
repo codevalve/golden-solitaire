@@ -32,6 +32,5 @@ export type MoveAction =
   | { type: 'MOVE_WASTE_TO_TABLEAU'; toCol: number }
   | { type: 'MOVE_WASTE_TO_FOUNDATION' }
   | { type: 'MOVE_TABLEAU_TO_FOUNDATION'; fromCol: number }
-  | { type: 'AUTO_SOLVE_STEP' }
   | { type: 'RESET_GAME' }
   | { type: 'UNDO' };

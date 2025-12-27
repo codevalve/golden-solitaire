@@ -6,25 +6,21 @@ import { SUIT_SYMBOLS } from '../constants';
 interface CardProps {
   card: Card;
   onClick?: () => void;
-  onDragStart?: (e: React.DragEvent) => void;
   className?: string;
   isDragging?: boolean;
-  draggable?: boolean;
 }
 
 const CardComponent: React.FC<CardProps> = ({ 
   card, 
   onClick, 
-  onDragStart, 
   className = '', 
-  isDragging = false,
-  draggable = false
+  isDragging = false
 }) => {
   if (!card.isFaceUp) {
     return (
       <div 
         onClick={onClick}
-        className={`relative w-full aspect-[2/3] rounded sm:rounded-lg border border-white/20 bg-emerald-700 shadow-sm sm:shadow-lg cursor-pointer flex items-center justify-center transition-all duration-200 hover:-translate-y-0.5 active:scale-95 ${className}`}
+        className={`relative w-full aspect-[2/3] rounded sm:rounded-lg border border-white/20 bg-emerald-700 shadow-sm sm:shadow-lg flex items-center justify-center transition-all duration-200 hover:-translate-y-0.5 active:scale-95 ${className}`}
       >
         <div className="w-[70%] h-[70%] rounded border border-white/10 flex items-center justify-center overflow-hidden">
           <div className="grid grid-cols-2 gap-0.5 sm:gap-1 opacity-20">
@@ -39,14 +35,15 @@ const CardComponent: React.FC<CardProps> = ({
 
   const textColor = card.color === 'red' ? 'text-red-600' : 'text-slate-900';
 
+  // Distinct dragging styles
+  const dragStyles = isDragging 
+    ? 'opacity-40 scale-95 grayscale-[0.3] ring-2 ring-yellow-400/50' 
+    : '';
+
   return (
     <div 
       onClick={onClick}
-      onDragStart={onDragStart}
-      draggable={draggable}
-      className={`relative w-full aspect-[2/3] rounded sm:rounded-lg border border-gray-300 bg-white shadow-sm sm:shadow-md flex flex-col p-0.5 sm:p-1.5 transition-all duration-200 select-none ${textColor} ${className} ${
-          draggable ? 'cursor-grab active:cursor-grabbing hover:shadow-xl' : 'cursor-default'
-      } ${isDragging ? 'opacity-40 grayscale scale-95' : ''}`}
+      className={`relative w-full aspect-[2/3] rounded sm:rounded-lg border border-gray-300 bg-white shadow-sm sm:shadow-md flex flex-col p-0.5 sm:p-1.5 transition-all duration-200 select-none ${textColor} ${className} ${dragStyles}`}
     >
       <div className="flex flex-col items-start leading-[0.8] sm:leading-none">
         <span className="text-[10px] sm:text-xl md:text-2xl font-black">{card.label}</span>
@@ -61,6 +58,10 @@ const CardComponent: React.FC<CardProps> = ({
         <span className="text-[10px] sm:text-xl md:text-2xl font-black">{card.label}</span>
         <span className="text-[8px] sm:text-base md:text-lg">{SUIT_SYMBOLS[card.suit]}</span>
       </div>
+
+      {isDragging && (
+        <div className="absolute inset-0 bg-yellow-400/5 rounded-lg pointer-events-none"></div>
+      )}
     </div>
   );
 };

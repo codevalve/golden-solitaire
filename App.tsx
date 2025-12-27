@@ -4,7 +4,6 @@ import { GameState, Card, MoveAction } from './types';
 import { dealNewGame, canMoveToFoundation, canMoveToTableau, checkWin } from './gameEngine';
 import Board from './components/Board';
 import Header from './components/Header';
-import GeminiAdvisor from './components/GeminiAdvisor';
 import ParticleCelebration from './components/ParticleCelebration';
 import WelcomeScreen from './components/WelcomeScreen';
 import { playSound } from './utils/audio';
@@ -232,12 +231,8 @@ const App: React.FC = () => {
           </>
         )}
       </main>
-
-      <div className="p-2 sm:p-4 bg-emerald-950/60 backdrop-blur-md border-t border-emerald-800">
-        <GeminiAdvisor gameState={gameState} />
-      </div>
       
-      <footer className="bg-emerald-950 p-2 text-emerald-400 text-[10px] sm:text-xs text-center border-t border-emerald-900">
+      <footer className="bg-emerald-950 p-3 text-emerald-400 text-[10px] sm:text-xs text-center border-t border-emerald-900">
         Golden Solitaire &bull; Designed for Seniors &bull; Privacy First &bull; No Ads
       </footer>
     </div>

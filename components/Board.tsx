@@ -11,14 +11,22 @@ interface BoardProps {
   soundEnabled: boolean;
 }
 
+interface DraggedStack {
+  source: 'waste' | 'tableau';
+  index: number;
+  cardIdx: number;
+}
+
 const Board: React.FC<BoardProps> = ({ gameState, onAction, soundEnabled }) => {
   const [selected, setSelected] = useState<{ source: 'waste' | 'tableau' | 'foundation', index: number, cardIdx?: number } | null>(null);
   const [dragOverTarget, setDragOverTarget] = useState<{ type: 'tableau' | 'foundation', index: number | string } | null>(null);
-
+  const [draggedStack, setDraggedStack] = useState<DraggedStack | null>(null);
+  
   useEffect(() => {
     if (gameState.moves === 0) {
       setSelected(null);
       setDragOverTarget(null);
+      setDraggedStack(null);
     }
   }, [gameState.moves]);
 
@@ -65,19 +73,25 @@ const Board: React.FC<BoardProps> = ({ gameState, onAction, soundEnabled }) => {
     }
   };
 
-  const handleDragStart = (e: React.DragEvent, source: 'waste' | 'tableau', index: number, cardIdx?: number) => {
-    playSound('click', soundEnabled);
-    if (source === 'tableau') {
-        const card = gameState.tableau[index][cardIdx!];
-        if (!card || !card.isFaceUp) {
-            e.preventDefault();
-            return;
-        }
-    }
+  const handleDragStart = (e: React.DragEvent, source: 'waste' | 'tableau', index: number, cardIdx: number) => {
+    const card = source === 'tableau' 
+      ? gameState.tableau[index][cardIdx] 
+      : gameState.waste[gameState.waste.length - 1];
 
-    const data = { source, index, cardIdx };
-    e.dataTransfer.setData('application/solitaire-move', JSON.stringify(data));
-    e.dataTransfer.effectAllowed = 'move';
+    if (card && card.isFaceUp) {
+      const data = { source, index, cardIdx };
+      e.dataTransfer.setData('application/solitaire-move', JSON.stringify(data));
+      e.dataTransfer.effectAllowed = 'move';
+      
+      setDraggedStack({ source, index, cardIdx });
+      playSound('click', soundEnabled);
+    } else {
+      e.preventDefault();
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedStack(null);
   };
 
   const handleDragOver = (e: React.DragEvent, type: 'tableau' | 'foundation', index: number | string) => {
@@ -92,6 +106,7 @@ const Board: React.FC<BoardProps> = ({ gameState, onAction, soundEnabled }) => {
   const handleDrop = (e: React.DragEvent, targetType: 'tableau' | 'foundation', targetIndex: number | string) => {
     e.preventDefault();
     setDragOverTarget(null);
+    setDraggedStack(null);
     const dataStr = e.dataTransfer.getData('application/solitaire-move');
     if (!dataStr) return;
 
@@ -106,6 +121,12 @@ const Board: React.FC<BoardProps> = ({ gameState, onAction, soundEnabled }) => {
   const isSelected = (source: string, idx: number, cIdx?: number) => {
     if (!selected) return false;
     return selected.source === source && selected.index === idx && (cIdx === undefined || selected.cardIdx === cIdx);
+  };
+
+  const isCardDragging = (source: 'waste' | 'tableau', idx: number, cIdx: number) => {
+    if (!draggedStack) return false;
+    if (draggedStack.source !== source || draggedStack.index !== idx) return false;
+    return cIdx >= draggedStack.cardIdx;
   };
 
   const isDragOver = (type: string, idx: number | string) => {
@@ -123,13 +144,13 @@ const Board: React.FC<BoardProps> = ({ gameState, onAction, soundEnabled }) => {
     const faceDownOffset = 'clamp(10px, 2.5vw, 18px)';
     const offset = isFaceUp ? faceUpOffset : faceDownOffset;
 
-    // Swift dealing animation delay based on position
     const animationDelay = gameState.moves === 0 ? `${(colIdx * 60) + (cardIdx * 30)}ms` : '0ms';
     const animationClass = gameState.moves === 0 ? 'animate-card-deal' : '';
 
     return (
       <div 
         key={card.id}
+        data-tableau-card={`${colIdx}-${cardIdx}`}
         className={`relative w-full ${animationClass}`}
         style={{ animationDelay }}
         draggable={isFaceUp}
@@ -137,6 +158,7 @@ const Board: React.FC<BoardProps> = ({ gameState, onAction, soundEnabled }) => {
             handleDragStart(e, 'tableau', colIdx, cardIdx);
             e.stopPropagation();
         }}
+        onDragEnd={handleDragEnd}
         onClick={(e) => { 
             e.stopPropagation(); 
             handleCardClick('tableau', colIdx, cardIdx); 
@@ -144,7 +166,7 @@ const Board: React.FC<BoardProps> = ({ gameState, onAction, soundEnabled }) => {
       >
         <CardComponent 
           card={card} 
-          draggable={isFaceUp}
+          isDragging={isCardDragging('tableau', colIdx, cardIdx)}
           className={`${isSelected('tableau', colIdx, cardIdx) ? 'ring-2 sm:ring-4 ring-yellow-400 z-50 shadow-2xl scale-105' : ''}`}
         />
         
@@ -159,7 +181,7 @@ const Board: React.FC<BoardProps> = ({ gameState, onAction, soundEnabled }) => {
   };
 
   return (
-    <div className="grid grid-cols-7 gap-1 sm:gap-2 md:gap-4 w-full mx-auto">
+    <div className="grid grid-cols-7 gap-1 sm:gap-2 md:gap-4 w-full mx-auto relative">
       <div className="col-span-1 flex flex-col items-center">
         <div 
           onClick={() => { setSelected(null); onAction({ type: 'DRAW_CARD' }); }}
@@ -167,7 +189,7 @@ const Board: React.FC<BoardProps> = ({ gameState, onAction, soundEnabled }) => {
           style={gameState.moves === 0 ? { animationDelay: '600ms' } : {}}
         >
           {gameState.stock.length > 0 ? (
-             <CardComponent card={gameState.stock[0]} className="!hover:translate-y-0" />
+             <CardComponent card={gameState.stock[0]} />
           ) : (
             <i className="fa-solid fa-rotate-right text-xl sm:text-3xl text-emerald-500"></i>
           )}
@@ -177,21 +199,29 @@ const Board: React.FC<BoardProps> = ({ gameState, onAction, soundEnabled }) => {
 
       <div className="col-span-1 flex flex-col items-center">
         <div className="relative w-full aspect-[2/3]">
-          {gameState.waste.slice(-3).map((card, i, arr) => (
-            <div 
-              key={card.id} 
-              className="absolute w-full h-full" 
-              style={{ left: `${i * 15}%` }}
-              onClick={() => handleCardClick('waste', 0)}
-              onDragStart={(e) => i === arr.length - 1 && handleDragStart(e, 'waste', 0)}
-            >
-              <CardComponent 
-                card={card} 
-                draggable={i === arr.length - 1}
-                className={`${isSelected('waste', 0) && i === arr.length - 1 ? 'ring-2 sm:ring-4 ring-yellow-400' : ''}`}
-              />
-            </div>
-          ))}
+          {gameState.waste.slice(-3).map((card, i, arr) => {
+            const actualIndexInWaste = gameState.waste.length - arr.length + i;
+            const isLast = i === arr.length - 1;
+            
+            return (
+              <div 
+                key={card.id} 
+                data-waste-top={isLast ? "true" : undefined}
+                className={`absolute w-full h-full`} 
+                style={{ left: `${i * 15}%` }}
+                onClick={() => handleCardClick('waste', 0)}
+                draggable={isLast}
+                onDragStart={(e) => isLast && handleDragStart(e, 'waste', 0, actualIndexInWaste)}
+                onDragEnd={handleDragEnd}
+              >
+                <CardComponent 
+                  card={card} 
+                  isDragging={isCardDragging('waste', 0, actualIndexInWaste)}
+                  className={`${isSelected('waste', 0) && isLast ? 'ring-2 sm:ring-4 ring-yellow-400' : ''}`}
+                />
+              </div>
+            );
+          })}
         </div>
         <span className="text-emerald-500 text-[8px] sm:text-xs mt-1 font-bold">WASTE</span>
       </div>
