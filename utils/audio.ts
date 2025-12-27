@@ -8,7 +8,7 @@ const getAudioCtx = () => {
   return audioCtx;
 };
 
-export const playSound = (type: 'click' | 'drop' | 'riffle', enabled: boolean) => {
+export const playSound = (type: 'click' | 'drop' | 'riffle' | 'victory', enabled: boolean) => {
   if (!enabled) return;
   const ctx = getAudioCtx();
   
@@ -51,5 +51,20 @@ export const playSound = (type: 'click' | 'drop' | 'riffle', enabled: boolean) =
         osc.stop(ctx.currentTime + 0.02);
       }, i * 40);
     }
+  } else if (type === 'victory') {
+    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.15);
+      gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.15);
+      gain.gain.linearRampToValueAtTime(0.1, ctx.currentTime + i * 0.15 + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.15 + 0.4);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime + i * 0.15);
+      osc.stop(ctx.currentTime + i * 0.15 + 0.5);
+    });
   }
 };

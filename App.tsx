@@ -5,12 +5,15 @@ import { dealNewGame, canMoveToFoundation, canMoveToTableau, checkWin } from './
 import Board from './components/Board';
 import Header from './components/Header';
 import GeminiAdvisor from './components/GeminiAdvisor';
+import ParticleCelebration from './components/ParticleCelebration';
+import WelcomeScreen from './components/WelcomeScreen';
 import { playSound } from './utils/audio';
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(dealNewGame());
   const [history, setHistory] = useState<GameState[]>([]);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(() => {
     const saved = localStorage.getItem('solitaire_sound');
     return saved === null ? true : saved === 'true';
@@ -42,6 +45,11 @@ const App: React.FC = () => {
     setShowResetConfirm(false);
     playSound('riffle', soundEnabled);
   }, [stopTimer, soundEnabled]);
+
+  const handleStartGame = useCallback(() => {
+    setIsFirstLoad(false);
+    resetGame();
+  }, [resetGame]);
 
   const saveHistory = useCallback((state: GameState) => {
     setHistory(prev => [...prev.slice(-20), JSON.parse(JSON.stringify(state))]); 
@@ -145,7 +153,11 @@ const App: React.FC = () => {
       if (moved) {
         saveHistory(prev);
         newState.moves += 1;
-        newState.isWon = checkWin(newState.foundation);
+        const isNowWon = checkWin(newState.foundation);
+        if (isNowWon && !prev.isWon) {
+          playSound('victory', soundEnabled);
+        }
+        newState.isWon = isNowWon;
         if (newState.isWon) stopTimer();
         return newState;
       }
@@ -159,7 +171,9 @@ const App: React.FC = () => {
   }, [stopTimer]);
 
   return (
-    <div className="min-h-screen flex flex-col font-sans max-w-5xl mx-auto shadow-2xl bg-emerald-900 overflow-hidden">
+    <div className="min-h-screen flex flex-col font-sans max-w-5xl mx-auto shadow-2xl bg-emerald-900 overflow-hidden relative">
+      {isFirstLoad && <WelcomeScreen onStart={handleStartGame} />}
+      
       <Header 
         moves={gameState.moves} 
         time={gameState.time} 
@@ -200,18 +214,22 @@ const App: React.FC = () => {
         )}
 
         {gameState.isWon && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[100] p-6 text-center">
-            <div className="bg-white rounded-3xl p-6 sm:p-10 shadow-2xl animate-bounce max-w-sm w-full border-4 border-emerald-500">
-              <h2 className="text-3xl sm:text-5xl font-black text-emerald-700 mb-4">You Won!</h2>
-              <p className="text-sm sm:text-xl text-gray-600 mb-6 sm:mb-8">Excellent job! You've cleared the board.</p>
-              <button 
-                onClick={resetGame}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white text-lg sm:text-2xl font-bold py-3 px-6 sm:py-4 sm:px-10 rounded-xl sm:rounded-2xl transition-all shadow-lg active:scale-95"
-              >
-                Play Again
-              </button>
+          <>
+            <ParticleCelebration count={80} />
+            <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[200] p-6 text-center">
+              <div className="bg-white rounded-3xl p-6 sm:p-10 shadow-2xl animate-bounce max-w-sm w-full border-4 border-emerald-500">
+                <div className="text-6xl mb-4">🏆</div>
+                <h2 className="text-3xl sm:text-5xl font-black text-emerald-700 mb-4">Victory!</h2>
+                <p className="text-sm sm:text-xl text-gray-600 mb-6 sm:mb-8">Amazing skill! You've cleared the board in {gameState.moves} moves.</p>
+                <button 
+                  onClick={resetGame}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-lg sm:text-2xl font-bold py-3 px-6 sm:py-4 sm:px-10 rounded-xl sm:rounded-2xl transition-all shadow-lg active:scale-95"
+                >
+                  Play Again
+                </button>
+              </div>
             </div>
-          </div>
+          </>
         )}
       </main>
 
