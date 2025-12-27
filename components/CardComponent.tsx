@@ -24,12 +24,12 @@ const CardComponent: React.FC<CardProps> = ({
     return (
       <div 
         onClick={onClick}
-        className={`relative w-16 h-24 sm:w-24 sm:h-36 rounded-lg border-2 border-white/20 bg-emerald-700 shadow-lg cursor-pointer flex items-center justify-center transition-transform hover:-translate-y-1 active:scale-95 ${className}`}
+        className={`relative w-full aspect-[2/3] rounded sm:rounded-lg border border-white/20 bg-emerald-700 shadow-sm sm:shadow-lg cursor-pointer flex items-center justify-center transition-all duration-200 hover:-translate-y-0.5 active:scale-95 ${className}`}
       >
-        <div className="w-10 h-16 sm:w-16 sm:h-24 rounded border border-white/10 flex items-center justify-center overflow-hidden">
-          <div className="grid grid-cols-2 gap-1 opacity-20">
-            {[...Array(8)].map((_, i) => (
-              <i key={i} className="fa-solid fa-diamond text-white text-[8px] sm:text-[12px]"></i>
+        <div className="w-[70%] h-[70%] rounded border border-white/10 flex items-center justify-center overflow-hidden">
+          <div className="grid grid-cols-2 gap-0.5 sm:gap-1 opacity-20">
+            {[...Array(6)].map((_, i) => (
+              <i key={i} className="fa-solid fa-diamond text-white text-[6px] sm:text-[12px]"></i>
             ))}
           </div>
         </div>
@@ -44,20 +44,22 @@ const CardComponent: React.FC<CardProps> = ({
       onClick={onClick}
       onDragStart={onDragStart}
       draggable={draggable}
-      className={`relative w-16 h-24 sm:w-24 sm:h-36 rounded-lg border border-gray-300 bg-white shadow-md cursor-grab active:cursor-grabbing flex flex-col p-1 sm:p-2 transition-transform hover:-translate-y-1 select-none ${textColor} ${className} ${isDragging ? 'opacity-50 grayscale' : ''}`}
+      className={`relative w-full aspect-[2/3] rounded sm:rounded-lg border border-gray-300 bg-white shadow-sm sm:shadow-md flex flex-col p-0.5 sm:p-1.5 transition-all duration-200 select-none ${textColor} ${className} ${
+          draggable ? 'cursor-grab active:cursor-grabbing hover:shadow-xl' : 'cursor-default'
+      } ${isDragging ? 'opacity-40 grayscale scale-95' : ''}`}
     >
-      <div className="flex flex-col items-start leading-none">
-        <span className="text-sm sm:text-2xl font-black">{card.label}</span>
-        <span className="text-xs sm:text-lg">{SUIT_SYMBOLS[card.suit]}</span>
+      <div className="flex flex-col items-start leading-[0.8] sm:leading-none">
+        <span className="text-[10px] sm:text-xl md:text-2xl font-black">{card.label}</span>
+        <span className="text-[8px] sm:text-base md:text-lg">{SUIT_SYMBOLS[card.suit]}</span>
       </div>
       
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <span className="text-2xl sm:text-6xl opacity-20">{SUIT_SYMBOLS[card.suit]}</span>
+        <span className="text-xl sm:text-4xl md:text-6xl opacity-10 sm:opacity-20">{SUIT_SYMBOLS[card.suit]}</span>
       </div>
 
-      <div className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 flex flex-col items-end leading-none rotate-180">
-        <span className="text-sm sm:text-2xl font-black">{card.label}</span>
-        <span className="text-xs sm:text-lg">{SUIT_SYMBOLS[card.suit]}</span>
+      <div className="absolute bottom-0.5 right-0.5 sm:bottom-1.5 sm:right-1.5 flex flex-col items-end leading-[0.8] sm:leading-none rotate-180">
+        <span className="text-[10px] sm:text-xl md:text-2xl font-black">{card.label}</span>
+        <span className="text-[8px] sm:text-base md:text-lg">{SUIT_SYMBOLS[card.suit]}</span>
       </div>
     </div>
   );

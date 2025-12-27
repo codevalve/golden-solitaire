@@ -4,10 +4,11 @@ import { SUITS, VALUES, VALUE_LABELS, getColor } from './constants';
 
 export const createDeck = (): Card[] => {
   const deck: Card[] = [];
+  const sessionNonce = Math.random().toString(36).substring(2, 7);
   SUITS.forEach(suit => {
     VALUES.forEach(value => {
       deck.push({
-        id: `${suit}-${value}`,
+        id: `${suit}-${value}-${sessionNonce}`,
         suit,
         value,
         label: VALUE_LABELS[value],
